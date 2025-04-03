@@ -11,6 +11,11 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+
+  List<String> mainMenu = [
+    'Songs', 'Playlist', 'Folders', 'Albums', 'Artists'
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -53,76 +58,21 @@ class _HomeState extends State<Home> {
 
         body: Column(
           children: [
-            // Container with a background color for the Row
-            Container(
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: Container(
-                      padding: EdgeInsets.all(10.0),
-                      color: Colors.transparent,
-                      child: Text(
-                        'Songs',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white),
-                      ), // Color for individual items
+            // Menu row
+            Row(
+              children: mainMenu.map((menuItem) {
+                return Expanded(
+                  child: Container(
+                    padding: EdgeInsets.all(10.0),
+                    color: Colors.transparent,
+                    child: Text(
+                      menuItem,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.white),
                     ),
                   ),
-
-                  Expanded(
-                    flex: 1,
-                    child: Container(
-                      padding: EdgeInsets.all(10.0),
-                      color: Colors.transparent,
-                      child: Text(
-                        'Playlists',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
-
-                  Expanded(
-                    flex: 1,
-                    child: Container(
-                      padding: EdgeInsets.all(10.0),
-                      color: Colors.transparent,
-                      child: Text(
-                        'Folders',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
-
-                  Expanded(
-                    flex: 1,
-                    child: Container(
-                      padding: EdgeInsets.all(10.0),
-                      color: Colors.transparent,
-                      child: Text(
-                        'Albums',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
-
-                  Expanded(
-                    flex: 1,
-                    child: Container(
-                      padding: EdgeInsets.all(10.0),
-                      color: Colors.transparent,
-                      child: Text(
-                        'Artists',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                );
+              }).toList(),
             ),
           ],
         ),
