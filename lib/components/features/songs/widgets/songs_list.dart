@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import '../../../data/models/song.dart';
 
 class SongsList extends StatefulWidget {
   const SongsList({super.key});
@@ -102,12 +103,4 @@ class _SongsListState extends State<SongsList> {
         )
     ;
   }
-}
-
-// Song class
-class Song {
-  final String title;
-  final String artist;
-
-  Song({required this.title, required this.artist});
 }

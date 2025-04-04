@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'components/side_menu.dart';
-import 'components/songs/songs.dart';
+import 'components/shared/widgets/navigation/side_menu.dart';
+import 'components/features/songs/screens/songs.dart';
 
 void main() => runApp(
   MaterialApp(

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../songs_list.dart';
+import '../widgets/songs_list.dart';
 
 void main() =>
     runApp(MaterialApp(debugShowCheckedModeBanner: false, home: const Songs()));
@@ -26,7 +26,7 @@ class _SongsState extends State<Songs> {
             Padding(
               padding: const EdgeInsets.all(12.0),
               child: Text(
-                '123 Songs',
+                '314 Songs',
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w100,
