@@ -38,7 +38,7 @@ class _HomeState extends State<Home> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color.fromARGB(255, 52, 1, 114), Color.fromARGB(255, 126, 3, 156)],
+          colors: [Color.fromARGB(255, 30, 1, 63), Color.fromARGB(255, 102, 10, 124)],
         ),
       ),
       child: Scaffold(
@@ -55,6 +55,7 @@ class _HomeState extends State<Home> {
             icon: const Icon(Icons.menu),
             color: Colors.white,
           ),
+          // No title to keep the space next to the hamburger menu empty
           actions: [
             // right-aligned icons
             IconButton(
@@ -78,22 +79,25 @@ class _HomeState extends State<Home> {
               children: mainMenu.map((menuItem) {
                 int index = mainMenu.indexOf(menuItem);
                 return Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(10.0),
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(
-                          color: _currentIndex == index ? Colors.white : Colors.transparent,
-                          width: 2.0,
+                  child: GestureDetector(
+                    onTap: () => _onMenuItemSelected(index),
+                    child: Container(
+                      padding: const EdgeInsets.all(10.0),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: _currentIndex == index ? Colors.white : Colors.transparent,
+                            width: 2.0,
+                          ),
                         ),
                       ),
-                    ),
-                    child: Text(
-                      menuItem,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: _currentIndex == index ? FontWeight.bold : FontWeight.normal,
+                      child: Text(
+                        menuItem,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: _currentIndex == index ? FontWeight.bold : FontWeight.normal,
+                        ),
                       ),
                     ),
                   ),
@@ -126,6 +130,10 @@ class _HomeState extends State<Home> {
       case 4:
         return const Text('Genres Content', style: TextStyle(color: Colors.white, fontSize: 24));
       case 5:
+        return const Text('Equalizer', style: TextStyle(color: Colors.white, fontSize: 24));
+      case 6:
+        return const Text('Sleep Timer', style: TextStyle(color: Colors.white, fontSize: 24));
+      case 7:
         return const Text('Settings', style: TextStyle(color: Colors.white, fontSize: 24));
       default:
         return const Text('Select an option', style: TextStyle(color: Colors.white, fontSize: 24));

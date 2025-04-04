@@ -22,6 +22,8 @@ class _SideMenuState extends State<SideMenu> {
     {'title': 'Albums', 'icon': CupertinoIcons.book},
     {'title': 'Artists', 'icon': CupertinoIcons.person_2},
     {'title': 'Genres', 'icon': CupertinoIcons.music_note_list},
+    {'title': 'Equalizer', 'icon': CupertinoIcons.slider_horizontal_3},
+    {'title': 'Sleep Timer', 'icon': CupertinoIcons.clock},
     {'title': 'Settings', 'icon': CupertinoIcons.settings},
   ];
 
@@ -69,17 +71,16 @@ class _SideMenuState extends State<SideMenu> {
                   return ListTile(
                     leading: Icon(
                       menuItems[index]['icon'],
-                      color: selectedIndex == index ? Colors.white : Colors.white70,
+                      color: Colors.white70,
                     ),
                     title: Text(
                       menuItems[index]['title'],
-                      style: TextStyle(
-                        color: selectedIndex == index ? Colors.white : Colors.white70,
-                        fontWeight: selectedIndex == index ? FontWeight.bold : FontWeight.normal,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontWeight: FontWeight.normal,
                       ),
                     ),
-                    selected: selectedIndex == index,
-                    selectedTileColor: Colors.white.withOpacity(0.1),
+                    selected: false, // Remove selected state
                     onTap: () {
                       setState(() {
                         selectedIndex = index;
