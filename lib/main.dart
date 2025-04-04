@@ -1,20 +1,35 @@
 import 'package:flutter/material.dart';
+import 'components/side_menu.dart';
 
-void main() =>
-    runApp(MaterialApp(debugShowCheckedModeBanner: false, home: Home()));
+void main() => runApp(MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        primarySwatch: Colors.purple,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: const Home(),
+    ));
 
 class Home extends StatefulWidget {
   const Home({super.key});
-
   @override
   State<Home> createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> {
-
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  int _currentIndex = 0;
+  
   List<String> mainMenu = [
-    'Songs', 'Playlist', 'Folders', 'Albums', 'Artists'
+    'Songs', 'Playlist', 'Albums', 'Artists', 'Genres'
   ];
+
+  void _onMenuItemSelected(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+    // You can add additional logic here based on the selected menu item
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,56 +42,93 @@ class _HomeState extends State<Home> {
         ),
       ),
       child: Scaffold(
-        // By defaut, Scaffold background is white
+        key: _scaffoldKey,
+        // By default, Scaffold background is white
         // Set its value to transparent
         backgroundColor: Colors.transparent,
         appBar: AppBar(
-          // title: Text('My App'), // Add a title if needed
           leading: IconButton(
             // left icon
             onPressed: () {
-              // print('You clicked me, an IconButton.');
+              _scaffoldKey.currentState?.openDrawer();
             },
-            icon: Icon(Icons.menu),
+            icon: const Icon(Icons.menu),
             color: Colors.white,
           ),
-
           actions: [
             // right-aligned icons
             IconButton(
               onPressed: () {
-                // print('You clicked me, an IconButton.');
+                // Search functionality
               },
-              icon: Icon(Icons.search_sharp),
+              icon: const Icon(Icons.search_sharp),
               color: Colors.white,
             ),
           ],
-
           backgroundColor: Colors.transparent,
           foregroundColor: Colors.white,
         ),
-
+        drawer: Drawer(
+          child: SideMenu(onMenuItemSelected: _onMenuItemSelected),
+        ),
         body: Column(
           children: [
             // Menu row
             Row(
               children: mainMenu.map((menuItem) {
+                int index = mainMenu.indexOf(menuItem);
                 return Expanded(
                   child: Container(
-                    padding: EdgeInsets.all(10.0),
-                    color: Colors.transparent,
+                    padding: const EdgeInsets.all(10.0),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: _currentIndex == index ? Colors.white : Colors.transparent,
+                          width: 2.0,
+                        ),
+                      ),
+                    ),
                     child: Text(
                       menuItem,
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: _currentIndex == index ? FontWeight.bold : FontWeight.normal,
+                      ),
                     ),
                   ),
                 );
               }).toList(),
             ),
+            // Main content area
+            Expanded(
+              child: Center(
+                child: _buildContent(),
+              ),
+            ),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildContent() {
+    // This function returns different content based on the selected index
+    switch (_currentIndex) {
+      case 0:
+        return const Text('Songs Content', style: TextStyle(color: Colors.white, fontSize: 24));
+      case 1:
+        return const Text('Playlist Content', style: TextStyle(color: Colors.white, fontSize: 24));
+      case 2:
+        return const Text('Albums Content', style: TextStyle(color: Colors.white, fontSize: 24));
+      case 3:
+        return const Text('Artists Content', style: TextStyle(color: Colors.white, fontSize: 24));
+      case 4:
+        return const Text('Genres Content', style: TextStyle(color: Colors.white, fontSize: 24));
+      case 5:
+        return const Text('Settings', style: TextStyle(color: Colors.white, fontSize: 24));
+      default:
+        return const Text('Select an option', style: TextStyle(color: Colors.white, fontSize: 24));
+    }
   }
 }
