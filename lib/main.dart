@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'components/side_menu.dart';
+import 'components/songs/songs.dart';
 
-void main() => runApp(MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.purple,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: const Home(),
-    ));
+void main() => runApp(
+  MaterialApp(
+    debugShowCheckedModeBanner: false,
+    theme: ThemeData(
+      primarySwatch: Colors.purple,
+      visualDensity: VisualDensity.adaptivePlatformDensity,
+    ),
+    home: const Home(),
+  ),
+);
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -19,10 +22,8 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int _currentIndex = 0;
-  
-  List<String> mainMenu = [
-    'Songs', 'Playlist', 'Albums', 'Artists', 'Genres'
-  ];
+
+  List<String> mainMenu = ['Songs', 'Playlist', 'Albums', 'Artists', 'Genres'];
 
   void _onMenuItemSelected(int index) {
     setState(() {
@@ -38,7 +39,10 @@ class _HomeState extends State<Home> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color.fromARGB(255, 30, 1, 63), Color.fromARGB(255, 102, 10, 124)],
+          colors: [
+            Color.fromARGB(255, 30, 1, 63),
+            Color.fromARGB(255, 102, 10, 124),
+          ],
         ),
       ),
       child: Scaffold(
@@ -76,37 +80,46 @@ class _HomeState extends State<Home> {
           children: [
             // Menu row
             Row(
-              children: mainMenu.map((menuItem) {
-                int index = mainMenu.indexOf(menuItem);
-                return Expanded(
-                  child: GestureDetector(
-                    onTap: () => _onMenuItemSelected(index),
-                    child: Container(
-                      padding: const EdgeInsets.all(10.0),
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: _currentIndex == index ? Colors.white : Colors.transparent,
-                            width: 2.0,
+              children:
+                  mainMenu.map((menuItem) {
+                    int index = mainMenu.indexOf(menuItem);
+                    return Expanded(
+                      child: GestureDetector(
+                        onTap: () => _onMenuItemSelected(index),
+                        child: Container(
+                          padding: const EdgeInsets.all(10.0),
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                color:
+                                    _currentIndex == index
+                                        ? Colors.white
+                                        : Colors.transparent,
+                                width: 2.0,
+                              ),
+                            ),
+                          ),
+                          child: Text(
+                            menuItem,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16.00,
+                              fontWeight:
+                                  _currentIndex == index
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                            ),
                           ),
                         ),
                       ),
-                      child: Text(
-                        menuItem,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: _currentIndex == index ? FontWeight.bold : FontWeight.normal,
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
+                    );
+                  }).toList(),
             ),
             // Main content area
             Expanded(
-              child: Center(
+              child: Align(
+                alignment: Alignment.topCenter,
                 child: _buildContent(),
               ),
             ),
@@ -120,23 +133,47 @@ class _HomeState extends State<Home> {
     // This function returns different content based on the selected index
     switch (_currentIndex) {
       case 0:
-        return const Text('Songs Content', style: TextStyle(color: Colors.white, fontSize: 24));
+        return Songs();
       case 1:
-        return const Text('Playlist Content', style: TextStyle(color: Colors.white, fontSize: 24));
+        return const Text(
+          'Playlist Content',
+          style: TextStyle(color: Colors.white, fontSize: 24),
+        );
       case 2:
-        return const Text('Albums Content', style: TextStyle(color: Colors.white, fontSize: 24));
+        return const Text(
+          'Albums Content',
+          style: TextStyle(color: Colors.white, fontSize: 24),
+        );
       case 3:
-        return const Text('Artists Content', style: TextStyle(color: Colors.white, fontSize: 24));
+        return const Text(
+          'Artists Content',
+          style: TextStyle(color: Colors.white, fontSize: 24),
+        );
       case 4:
-        return const Text('Genres Content', style: TextStyle(color: Colors.white, fontSize: 24));
+        return const Text(
+          'Genres Content',
+          style: TextStyle(color: Colors.white, fontSize: 24),
+        );
       case 5:
-        return const Text('Equalizer', style: TextStyle(color: Colors.white, fontSize: 24));
+        return const Text(
+          'Equalizer',
+          style: TextStyle(color: Colors.white, fontSize: 24),
+        );
       case 6:
-        return const Text('Sleep Timer', style: TextStyle(color: Colors.white, fontSize: 24));
+        return const Text(
+          'Sleep Timer',
+          style: TextStyle(color: Colors.white, fontSize: 24),
+        );
       case 7:
-        return const Text('Settings', style: TextStyle(color: Colors.white, fontSize: 24));
+        return const Text(
+          'Settings',
+          style: TextStyle(color: Colors.white, fontSize: 24),
+        );
       default:
-        return const Text('Select an option', style: TextStyle(color: Colors.white, fontSize: 24));
+        return const Text(
+          'Select an option',
+          style: TextStyle(color: Colors.white, fontSize: 24),
+        );
     }
   }
 }
