@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'components/shared/widgets/navigation/side_menu.dart';
 import 'components/features/songs/screens/songs.dart';
 import 'components/shared/widgets/bottom_sheet.dart';
+import 'components/data/models/song.dart';
 
 void main() => runApp(
   MaterialApp(
@@ -23,6 +24,7 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int _currentIndex = 0;
+  Song? _currentSong;
 
   List<String> mainMenu = ['Songs', 'Playlist', 'Albums', 'Artists', 'Genres'];
 
@@ -33,121 +35,115 @@ class _HomeState extends State<Home> {
     // You can add additional logic here based on the selected menu item
   }
 
-  @override
-Widget build(BuildContext context) {
-  return Container(
-    decoration: const BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          Color.fromARGB(255, 30, 1, 63),
-          Color.fromARGB(255, 102, 10, 124),
-        ],
-      ),
-    ),
+  void _onSongSelected(Song song) {
+    setState(() {
+      _currentSong = song;
+    });
+  }
 
-    child: Scaffold(
-      key: _scaffoldKey,
-      // By default, Scaffold background is white
-      // Set its value to transparent
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        leading: IconButton(
-          // left icon
-          onPressed: () {
-            _scaffoldKey.currentState?.openDrawer();
-          },
-          icon: const Icon(Icons.menu),
-          color: Colors.white,
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color.fromARGB(255, 30, 1, 63),
+            Color.fromARGB(255, 102, 10, 124),
+          ],
         ),
-        // No title to keep the space next to the hamburger menu empty
-        actions: [
-          // right-aligned icons
-          IconButton(
+      ),
+
+      child: Scaffold(
+        key: _scaffoldKey,
+        // By default, Scaffold background is white
+        // Set its value to transparent
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          leading: IconButton(
+            // left icon
             onPressed: () {
-              // Search functionality
+              _scaffoldKey.currentState?.openDrawer();
             },
-            icon: const Icon(Icons.search_sharp),
+            icon: const Icon(Icons.menu),
             color: Colors.white,
           ),
-        ],
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.white,
-      ),
+          // No title to keep the space next to the hamburger menu empty
+          actions: [
+            // right-aligned icons
+            IconButton(
+              onPressed: () {
+                // Search functionality
+              },
+              icon: const Icon(Icons.search_sharp),
+              color: Colors.white,
+            ),
+          ],
+          backgroundColor: Colors.transparent,
+          foregroundColor: Colors.white,
+        ),
 
-      drawer: Drawer(
-        child: SideMenu(onMenuItemSelected: _onMenuItemSelected),
-      ),
+        drawer: Drawer(
+          child: SideMenu(onMenuItemSelected: _onMenuItemSelected),
+        ),
 
-      body: Stack(
-        children: [
-          Column(
-            children: [
-              // Menu row
-              Row(
-                children:
-                    mainMenu.map((menuItem) {
-                      int index = mainMenu.indexOf(menuItem);
-                      return Expanded(
-                        child: GestureDetector(
-                          onTap: () => _onMenuItemSelected(index),
-                          child: Container(
-                            padding: const EdgeInsets.all(10.0),
-                            decoration: BoxDecoration(
-                              border: Border(
-                                bottom: BorderSide(
-                                  color:
-                                      _currentIndex == index
-                                          ? Colors.white
-                                          : Colors.transparent,
-                                  width: 2.0,
-                                ),
-                              ),
-                            ),
-                            child: Text(
-                              menuItem,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16.00,
-                                fontWeight:
-                                    _currentIndex == index
-                                        ? FontWeight.bold
-                                        : FontWeight.normal,
-                              ),
-                            ),
+        body: Column(
+          children: [
+            // Menu row
+            Row(
+              children: mainMenu.map((menuItem) {
+                int index = mainMenu.indexOf(menuItem);
+                return Expanded(
+                  child: GestureDetector(
+                    onTap: () => _onMenuItemSelected(index),
+                    child: Container(
+                      padding: const EdgeInsets.all(10.0),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: _currentIndex == index
+                                ? Colors.white
+                                : Colors.transparent,
+                            width: 2.0,
                           ),
                         ),
-                      );
-                    }).toList(),
-              ),
-              // Main content area
-              Expanded(
-                child: _buildContent(),
-              ),
-            ],
-          ),
-          
-          // Position the DraggableSheet at the bottom
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            top: 0,
-            child: DraggableSheet(child: SizedBox(height: 100)),
-          ),
-        ],
+                      ),
+                      child: Text(
+                        menuItem,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16.00,
+                          fontWeight: _currentIndex == index
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+            
+            // Main content area
+            Expanded(
+              child: _buildContent(),
+            ),
+          ],
+        ),
+        
+        // Add the mini player at the bottom of the scaffold
+        bottomNavigationBar: MiniPlayer(currentSong: _currentSong),
       ),
-    ),
-  );
-}
+    );
+  }
 
   Widget _buildContent() {
     // This function returns different content based on the selected index
     switch (_currentIndex) {
       case 0:
-        return Songs();
+        return Songs(onSongSelected: _onSongSelected);
       case 1:
         return const Text(
           'Playlist Content',

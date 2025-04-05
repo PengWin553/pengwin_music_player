@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import '../widgets/songs_list.dart';
+import '../../../data/models/song.dart';
 
 void main() =>
     runApp(MaterialApp(debugShowCheckedModeBanner: false, home: const Songs()));
 
 class Songs extends StatefulWidget {
-  const Songs({super.key});
+  final Function(Song)? onSongSelected;
+  
+  const Songs({super.key, this.onSongSelected});
 
   @override
   State<Songs> createState() => _SongsState();
@@ -73,8 +76,8 @@ class _SongsState extends State<Songs> {
             child: Padding(
               // Add some padding at the bottom to ensure content can scroll
               // beneath the bottom sheet when collapsed
-              padding: EdgeInsets.only(bottom: 150),
-              child: SongsList(),
+              padding: EdgeInsets.only(bottom: 80), // Adjusted for miniplayer height
+              child: SongsList(onSongSelected: widget.onSongSelected),
             ),
           ),
         ),
