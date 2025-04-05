@@ -16,6 +16,7 @@ class _SongsState extends State<Songs> {
   Widget build(BuildContext context) {
     return Column(
       children: [
+        // Header row with song count and action buttons
         Row(
           // horizontal alignment
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -65,10 +66,19 @@ class _SongsState extends State<Songs> {
           ],
         ),
 
-        SongsList(),
-
+        // Make the list scrollable and expanded to fill remaining space
+        Expanded(
+          child: SingleChildScrollView(
+            physics: AlwaysScrollableScrollPhysics(),
+            child: Padding(
+              // Add some padding at the bottom to ensure content can scroll
+              // beneath the bottom sheet when collapsed
+              padding: EdgeInsets.only(bottom: 150),
+              child: SongsList(),
+            ),
+          ),
+        ),
       ],
     );
   }
 }
-

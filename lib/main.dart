@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'components/shared/widgets/navigation/side_menu.dart';
 import 'components/features/songs/screens/songs.dart';
+import 'components/shared/widgets/bottom_sheet.dart';
 
 void main() => runApp(
   MaterialApp(
@@ -33,101 +34,114 @@ class _HomeState extends State<Home> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color.fromARGB(255, 30, 1, 63),
-            Color.fromARGB(255, 102, 10, 124),
-          ],
-        ),
+Widget build(BuildContext context) {
+  return Container(
+    decoration: const BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Color.fromARGB(255, 30, 1, 63),
+          Color.fromARGB(255, 102, 10, 124),
+        ],
       ),
-      child: Scaffold(
-        key: _scaffoldKey,
-        // By default, Scaffold background is white
-        // Set its value to transparent
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          leading: IconButton(
-            // left icon
+    ),
+
+    child: Scaffold(
+      key: _scaffoldKey,
+      // By default, Scaffold background is white
+      // Set its value to transparent
+      backgroundColor: Colors.transparent,
+      appBar: AppBar(
+        leading: IconButton(
+          // left icon
+          onPressed: () {
+            _scaffoldKey.currentState?.openDrawer();
+          },
+          icon: const Icon(Icons.menu),
+          color: Colors.white,
+        ),
+        // No title to keep the space next to the hamburger menu empty
+        actions: [
+          // right-aligned icons
+          IconButton(
             onPressed: () {
-              _scaffoldKey.currentState?.openDrawer();
+              // Search functionality
             },
-            icon: const Icon(Icons.menu),
+            icon: const Icon(Icons.search_sharp),
             color: Colors.white,
           ),
-          // No title to keep the space next to the hamburger menu empty
-          actions: [
-            // right-aligned icons
-            IconButton(
-              onPressed: () {
-                // Search functionality
-              },
-              icon: const Icon(Icons.search_sharp),
-              color: Colors.white,
-            ),
-          ],
-          backgroundColor: Colors.transparent,
-          foregroundColor: Colors.white,
-        ),
-        drawer: Drawer(
-          child: SideMenu(onMenuItemSelected: _onMenuItemSelected),
-        ),
-        body: Column(
-          children: [
-            // Menu row
-            Row(
-              children:
-                  mainMenu.map((menuItem) {
-                    int index = mainMenu.indexOf(menuItem);
-                    return Expanded(
-                      child: GestureDetector(
-                        onTap: () => _onMenuItemSelected(index),
-                        child: Container(
-                          padding: const EdgeInsets.all(10.0),
-                          decoration: BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(
-                                color:
+        ],
+        backgroundColor: Colors.transparent,
+        foregroundColor: Colors.white,
+      ),
+
+      drawer: Drawer(
+        child: SideMenu(onMenuItemSelected: _onMenuItemSelected),
+      ),
+
+      body: Stack(
+        children: [
+          Column(
+            children: [
+              // Menu row
+              Row(
+                children:
+                    mainMenu.map((menuItem) {
+                      int index = mainMenu.indexOf(menuItem);
+                      return Expanded(
+                        child: GestureDetector(
+                          onTap: () => _onMenuItemSelected(index),
+                          child: Container(
+                            padding: const EdgeInsets.all(10.0),
+                            decoration: BoxDecoration(
+                              border: Border(
+                                bottom: BorderSide(
+                                  color:
+                                      _currentIndex == index
+                                          ? Colors.white
+                                          : Colors.transparent,
+                                  width: 2.0,
+                                ),
+                              ),
+                            ),
+                            child: Text(
+                              menuItem,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16.00,
+                                fontWeight:
                                     _currentIndex == index
-                                        ? Colors.white
-                                        : Colors.transparent,
-                                width: 2.0,
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
                               ),
                             ),
                           ),
-                          child: Text(
-                            menuItem,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16.00,
-                              fontWeight:
-                                  _currentIndex == index
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                            ),
-                          ),
                         ),
-                      ),
-                    );
-                  }).toList(),
-            ),
-            // Main content area
-            Expanded(
-              child: Align(
-                alignment: Alignment.topCenter,
+                      );
+                    }).toList(),
+              ),
+              // Main content area
+              Expanded(
                 child: _buildContent(),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
+          
+          // Position the DraggableSheet at the bottom
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            top: 0,
+            child: DraggableSheet(child: SizedBox(height: 100)),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildContent() {
     // This function returns different content based on the selected index
