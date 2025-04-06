@@ -5,7 +5,7 @@ class SideMenu extends StatefulWidget {
   final Function(int) onMenuItemSelected;
   
   const SideMenu({
-    super.key, 
+    super.key,
     required this.onMenuItemSelected,
   });
   
@@ -25,7 +25,7 @@ class _SideMenuState extends State<SideMenu> {
     {'title': 'Sleep Timer', 'icon': CupertinoIcons.clock},
     {'title': 'Settings', 'icon': CupertinoIcons.settings},
   ];
-
+ 
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -36,29 +36,31 @@ class _SideMenuState extends State<SideMenu> {
         child: Column(
           children: [
             const SizedBox(height: 20),
-            // User profile section
-            const CircleAvatar(
-              radius: 40,
-              backgroundColor: Colors.white24,
-              child: Icon(CupertinoIcons.person, size: 40, color: Colors.white),
+            // Logo image instead of CircleAvatar
+            Container(
+              width: 80,
+              height: 80,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+              ),
+              child: ClipOval(
+                child: Image.asset(
+                  'assets/images/logo.png',
+                  fit: BoxFit.cover,
+                ),
+              ),
             ),
             const SizedBox(height: 10),
             const Text(
-              "User Name",
+              "Penguin Music",
               style: TextStyle(
-                color: Colors.white,
+                color: Color.fromARGB(255, 255, 166, 33),
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 5),
-            const Text(
-              "user@example.com",
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 14,
-              ),
-            ),
+           
             const SizedBox(height: 30),
             const Divider(color: Colors.white24, thickness: 1),
             const SizedBox(height: 10),
@@ -94,19 +96,6 @@ class _SideMenuState extends State<SideMenu> {
                 },
               ),
             ),
-            // Bottom logout button
-            const Divider(color: Colors.white24, thickness: 1),
-            ListTile(
-              leading: const Icon(Icons.logout, color: Colors.white70),
-              title: const Text(
-                "Logout", 
-                style: TextStyle(color: Colors.white70),
-              ),
-              onTap: () {
-                // Add logout functionality here
-              },
-            ),
-            const SizedBox(height: 20),
           ],
         ),
       ),
