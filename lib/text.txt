@@ -1,0 +1,879 @@
+song.dart:
+
+class Song {
+  final int id;
+  final String title;
+  final String artist;
+  final String album;
+  final String genre;
+  final String path;
+  final String cover;
+  final Duration duration;  // Track length
+  final int trackNumber;    // Position in album
+  final int year;          // Release year
+  final int fileSize;      // In bytes
+  
+  Song({
+    required this.id,
+    required this.title,
+    required this.artist,
+    required this.album,
+    this.genre = '',
+    required this.path,
+    this.cover = '',
+    required this.duration,
+    this.trackNumber = 0,
+    this.year = 0,
+    this.fileSize = 0,
+  });
+}
+
+song_list.dart:
+
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import '../../../data/models/song.dart';
+
+class SongsList extends StatefulWidget {
+  final Function(Song)? onSongSelected;
+  
+  const SongsList({super.key, this.onSongSelected});
+
+  @override
+  State<SongsList> createState() => _SongsListState();
+}
+
+class _SongsListState extends State<SongsList> {
+  List<Song> songs = [
+    Song(
+      id: 1,
+      title: "Compared Child",
+      artist: "TUYU",
+      album: "Compared Child",
+      path: "assets/music/compared_child.mp3",
+      duration: const Duration(minutes: 3, seconds: 45),
+    ),
+    Song(
+      id: 2,
+      title: "It's Raining After All",
+      artist: "TUYU",
+      album: "It's Raining After All",
+      path: "assets/music/TUYU - Its Raining After All.mp3",
+      duration: const Duration(minutes: 4, seconds: 06),
+    ),
+    Song(
+      id: 3,
+      title: "Moonlight",
+      artist: "Suisei",
+      album: "Stellar Moments",
+      path: "assets/music/moonlight.mp3",
+      duration: const Duration(minutes: 3, seconds: 28),
+    ),
+  ];
+  
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      // Important: disable scrolling in this ListView since the parent SingleChildScrollView handles it
+      physics: NeverScrollableScrollPhysics(),
+      // Important: ensure the ListView doesn't try to be infinitely tall
+      shrinkWrap: true,
+      itemCount: songs.length,
+      itemBuilder: (context, index) {
+        final song = songs[index];
+        return InkWell(
+          onTap: () {
+            if (widget.onSongSelected != null) {
+              widget.onSongSelected!(song);
+            }
+          },
+          child: Container(
+            padding: EdgeInsets.fromLTRB(10, 6, 10, 6),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // left container
+                Expanded(
+                  flex: 1,
+                  child: Container(
+                    padding: EdgeInsets.fromLTRB(0, 10, 0, 10),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Color.fromARGB(255, 43, 1, 92),
+                          Color.fromARGB(255, 126, 13, 154),
+                        ],
+                      ),
+                      border: Border.all(color: Colors.purple),
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(12.0),
+                      ),
+                    ),
+                    child: Icon(
+                      CupertinoIcons.music_note,
+                      size: 20,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+
+                // center container
+                Expanded(
+                  flex: 8,
+                  child: Container(
+                    padding: EdgeInsets.fromLTRB(16, 5, 0, 5),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          song.title,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        Text(
+                          song.artist,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12.0,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // right container
+                Expanded(
+                  flex: 1,
+                  child: IconButton(
+                    onPressed: () {
+                      // Show options menu
+                    },
+                    icon: Icon(Icons.more_vert),
+                    color: Colors.white,
+                    iconSize: 18.0,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+songs.dart:
+import 'package:flutter/material.dart';
+import '../widgets/songs_list.dart';
+import '../../../data/models/song.dart';
+
+void main() =>
+    runApp(MaterialApp(debugShowCheckedModeBanner: false, home: const Songs()));
+
+class Songs extends StatefulWidget {
+  final Function(Song)? onSongSelected;
+  
+  const Songs({super.key, this.onSongSelected});
+
+  @override
+  State<Songs> createState() => _SongsState();
+}
+
+class _SongsState extends State<Songs> {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        // Header row with song count and action buttons
+        Row(
+          // horizontal alignment
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          // vertical alignment
+          crossAxisAlignment: CrossAxisAlignment.end,
+
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Text(
+                '314 Songs',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w100,
+                  fontSize: 14.00,
+                ),
+              ),
+            ),
+
+            Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () {},
+                    icon: Icon(Icons.shuffle),
+                    color: Colors.white,
+                    iconSize: 22.00,
+                  ),
+
+                  IconButton(
+                    onPressed: () {},
+                    icon: Icon(Icons.sort),
+                    color: Colors.white,
+                    iconSize: 18.00,
+                  ),
+
+                  IconButton(
+                    onPressed: () {},
+                    icon: Icon(Icons.checklist),
+                    color: Colors.white,
+                    iconSize: 18.00,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+
+        // Make the list scrollable and expanded to fill remaining space
+        Expanded(
+          child: SingleChildScrollView(
+            physics: AlwaysScrollableScrollPhysics(),
+            child: Padding(
+              // Add some padding at the bottom to ensure content can scroll
+              // beneath the bottom sheet when collapsed
+              padding: EdgeInsets.only(bottom: 80), // Adjusted for miniplayer height
+              child: SongsList(onSongSelected: widget.onSongSelected),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+bottom_sheet.dart:
+
+import 'package:flutter/material.dart';
+import '../../data/models/song.dart';
+import '../../features/songs/screens/full_player.dart';
+
+class MiniPlayer extends StatelessWidget {
+  final Song? currentSong;
+
+  const MiniPlayer({Key? key, this.currentSong}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    // If no song is selected, hide the miniplayer
+    if (currentSong == null) {
+      return const SizedBox.shrink();
+    }
+
+    return GestureDetector(
+      onTap: () {
+        _navigateToFullPlayer(context, currentSong!);
+      },
+      child: Hero(
+        tag: 'player-${currentSong!.title}',
+        child: Material(
+          // Material is needed for the Hero animation to work with text
+          color: Colors.transparent,
+          child: Container(
+            height: 70,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color.fromARGB(255, 43, 1, 92),
+                  Color.fromARGB(255, 126, 13, 154),
+                ],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  spreadRadius: 1,
+                  blurRadius: 5,
+                  offset: const Offset(0, -1),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                // Song icon/art
+                Container(
+                  width: 50,
+                  height: 50,
+                  margin: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color.fromARGB(255, 60, 10, 110),
+                        Color.fromARGB(255, 150, 30, 180),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.music_note,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+                
+                // Song info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        currentSong!.title,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        currentSong!.artist,
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                // Controls
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(
+                        Icons.skip_previous,
+                        color: Colors.white,
+                      ),
+                      onPressed: () {
+                        // Add previous song functionality
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(
+                        Icons.play_arrow, // or Icons.pause
+                        color: Colors.white,
+                      ),
+                      onPressed: () {
+                        // Add play/pause functionality
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(
+                        Icons.skip_next,
+                        color: Colors.white,
+                      ),
+                      onPressed: () {
+                        // Add next song functionality
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _navigateToFullPlayer(BuildContext context, Song song) {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => FullPlayer(song: song),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(0.0, 1.0);
+          const end = Offset.zero;
+          const curve = Curves.easeInOutCubic;
+          
+          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+          
+          // Create a sliding animation from bottom to top
+          return SlideTransition(
+            position: animation.drive(tween),
+            child: child,
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 500),
+      ),
+    );
+  }
+}
+
+main.dart:
+
+import 'package:flutter/material.dart';
+import 'components/shared/widgets/navigation/side_menu.dart';
+import 'components/features/songs/screens/songs.dart';
+import 'components/shared/widgets/bottom_sheet.dart';
+import 'components/data/models/song.dart';
+
+void main() => runApp(
+  MaterialApp(
+    debugShowCheckedModeBanner: false,
+    theme: ThemeData(
+      primarySwatch: Colors.purple,
+      visualDensity: VisualDensity.adaptivePlatformDensity,
+    ),
+    home: const Home(),
+  ),
+);
+
+class Home extends StatefulWidget {
+  const Home({super.key});
+  @override
+  State<Home> createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  int _currentIndex = 0;
+  Song? _currentSong;
+
+  List<String> mainMenu = ['Songs', 'Playlist', 'Albums', 'Artists', 'Genres'];
+
+  void _onMenuItemSelected(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+    // You can add additional logic here based on the selected menu item
+  }
+
+  void _onSongSelected(Song song) {
+    setState(() {
+      _currentSong = song;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color.fromARGB(255, 30, 1, 63),
+            Color.fromARGB(255, 102, 10, 124),
+          ],
+        ),
+      ),
+
+      child: Scaffold(
+        key: _scaffoldKey,
+        // By default, Scaffold background is white
+        // Set its value to transparent
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          leading: IconButton(
+            // left icon
+            onPressed: () {
+              _scaffoldKey.currentState?.openDrawer();
+            },
+            icon: const Icon(Icons.menu),
+            color: Colors.white,
+          ),
+          // No title to keep the space next to the hamburger menu empty
+          actions: [
+            // right-aligned icons
+            IconButton(
+              onPressed: () {
+                // Search functionality
+              },
+              icon: const Icon(Icons.search_sharp),
+              color: Colors.white,
+            ),
+          ],
+          backgroundColor: Colors.transparent,
+          foregroundColor: Colors.white,
+        ),
+
+        drawer: Drawer(
+          child: SideMenu(onMenuItemSelected: _onMenuItemSelected),
+        ),
+
+        body: Column(
+          children: [
+            // Menu row
+            Row(
+              children: mainMenu.map((menuItem) {
+                int index = mainMenu.indexOf(menuItem);
+                return Expanded(
+                  child: GestureDetector(
+                    onTap: () => _onMenuItemSelected(index),
+                    child: Container(
+                      padding: const EdgeInsets.all(10.0),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: _currentIndex == index
+                                ? Colors.white
+                                : Colors.transparent,
+                            width: 2.0,
+                          ),
+                        ),
+                      ),
+                      child: Text(
+                        menuItem,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16.00,
+                          fontWeight: _currentIndex == index
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+            
+            // Main content area
+            Expanded(
+              child: _buildContent(),
+            ),
+          ],
+        ),
+        
+        // Add the mini player at the bottom of the scaffold
+        bottomNavigationBar: MiniPlayer(currentSong: _currentSong),
+      ),
+    );
+  }
+
+  Widget _buildContent() {
+    // This function returns different content based on the selected index
+    switch (_currentIndex) {
+      case 0:
+        return Songs(onSongSelected: _onSongSelected);
+      case 1:
+        return const Text(
+          'Playlist Content',
+          style: TextStyle(color: Colors.white, fontSize: 24),
+        );
+      case 2:
+        return const Text(
+          'Albums Content',
+          style: TextStyle(color: Colors.white, fontSize: 24),
+        );
+      case 3:
+        return const Text(
+          'Artists Content',
+          style: TextStyle(color: Colors.white, fontSize: 24),
+        );
+      case 4:
+        return const Text(
+          'Genres Content',
+          style: TextStyle(color: Colors.white, fontSize: 24),
+        );
+      case 5:
+        return const Text(
+          'Equalizer',
+          style: TextStyle(color: Colors.white, fontSize: 24),
+        );
+      case 6:
+        return const Text(
+          'Sleep Timer',
+          style: TextStyle(color: Colors.white, fontSize: 24),
+        );
+      case 7:
+        return const Text(
+          'Settings',
+          style: TextStyle(color: Colors.white, fontSize: 24),
+        );
+      default:
+        return const Text(
+          'Select an option',
+          style: TextStyle(color: Colors.white, fontSize: 24),
+        );
+    }
+  }
+}
+
+full_player.dart:
+
+import 'package:flutter/material.dart';
+import '../../../data/models/song.dart';
+
+class FullPlayer extends StatefulWidget {
+  final Song song;
+  
+  const FullPlayer({Key? key, required this.song}) : super(key: key);
+
+  @override
+  State<FullPlayer> createState() => _FullPlayerState();
+}
+
+class _FullPlayerState extends State<FullPlayer> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _progressAnimation;
+  bool _isPlaying = true;
+  double _currentSliderValue = 20;
+  
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 180), // 3 minutes song
+      vsync: this,
+    );
+    _progressAnimation = Tween<double>(begin: 0, end: 100).animate(_controller)
+      ..addListener(() {
+        setState(() {
+          _currentSliderValue = _progressAnimation.value;
+        });
+      });
+    
+    // Auto-start playback animation
+    _controller.forward();
+  }
+  
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+  
+  String _formatDuration(double value) {
+    final totalSeconds = (value / 100 * 180).round(); // 3 minutes in seconds
+    final minutes = totalSeconds ~/ 60;
+    final seconds = totalSeconds % 60;
+    return '${minutes.toString().padLeft(1, '0')}:${seconds.toString().padLeft(2, '0')}';
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color.fromARGB(255, 30, 1, 63),
+              Color.fromARGB(255, 102, 10, 124),
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // App bar with back button
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 32),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                    const Expanded(
+                      child: Center(
+                        child: Text(
+                          'Now Playing',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.more_vert, color: Colors.white),
+                      onPressed: () {},
+                    ),
+                  ],
+                ),
+              ),
+              
+              // Album artwork - using less vertical space
+              Expanded(
+                flex: 4,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(32.0, 16.0, 32.0, 16.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Color.fromARGB(255, 60, 10, 110), 
+                          Color.fromARGB(255, 150, 30, 180),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          spreadRadius: 2,
+                          blurRadius: 15,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: const Center(
+                      child: Icon(
+                        Icons.music_note,
+                        size: 100,
+                        color: Colors.white70,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              
+              // Song information and controls - more compact layout
+              Expanded(
+                flex: 3,
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 16.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          widget.song.title,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          widget.song.artist,
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 18,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        
+                        // Progress bar
+                        const SizedBox(height: 16),
+                        Slider(
+                          value: _currentSliderValue,
+                          min: 0,
+                          max: 100,
+                          activeColor: Colors.white,
+                          inactiveColor: Colors.white24,
+                          onChanged: (double value) {
+                            setState(() {
+                              _currentSliderValue = value;
+                              _controller.value = value / 100;
+                            });
+                          },
+                        ),
+                        
+                        // Time indicators
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                _formatDuration(_currentSliderValue),
+                                style: const TextStyle(color: Colors.white70),
+                              ),
+                              const Text(
+                                '3:00',
+                                style: TextStyle(color: Colors.white70),
+                              ),
+                            ],
+                          ),
+                        ),
+                        
+                        // Playback controls - reduced vertical spacing
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.shuffle, color: Colors.white70, size: 24),
+                              onPressed: () {},
+                              padding: const EdgeInsets.all(8),
+                              constraints: const BoxConstraints(),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.skip_previous, color: Colors.white, size: 32),
+                              onPressed: () {},
+                              padding: const EdgeInsets.all(8),
+                              constraints: const BoxConstraints(),
+                            ),
+                            Container(
+                              width: 60,
+                              height: 60,
+                              margin: const EdgeInsets.symmetric(horizontal: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              child: IconButton(
+                                icon: Icon(
+                                  _isPlaying ? Icons.pause : Icons.play_arrow,
+                                  color: const Color.fromARGB(255, 102, 10, 124),
+                                  size: 32,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _isPlaying = !_isPlaying;
+                                    if (_isPlaying) {
+                                      _controller.forward();
+                                    } else {
+                                      _controller.stop();
+                                    }
+                                  });
+                                },
+                                padding: EdgeInsets.zero,
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.skip_next, color: Colors.white, size: 32),
+                              onPressed: () {},
+                              padding: const EdgeInsets.all(8),
+                              constraints: const BoxConstraints(),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.repeat, color: Colors.white70, size: 24),
+                              onPressed: () {},
+                              padding: const EdgeInsets.all(8),
+                              constraints: const BoxConstraints(),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+Can you make it so that when I select a song (especially the It's Raining After All for now), it plays the music in my bottom_sheet.dart? Remember that this is an offline app.

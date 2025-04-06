@@ -1,50 +1,86 @@
 import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';
 import '../../../data/models/song.dart';
 
 class FullPlayer extends StatefulWidget {
   final Song song;
+  final AudioPlayer audioPlayer;
+  final bool isPlaying;
   
-  const FullPlayer({Key? key, required this.song}) : super(key: key);
+  const FullPlayer({
+    Key? key, 
+    required this.song, 
+    required this.audioPlayer, 
+    required this.isPlaying
+  }) : super(key: key);
 
   @override
   State<FullPlayer> createState() => _FullPlayerState();
 }
 
-class _FullPlayerState extends State<FullPlayer> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _progressAnimation;
-  bool _isPlaying = true;
-  double _currentSliderValue = 20;
+class _FullPlayerState extends State<FullPlayer> {
+  bool _isPlaying = false;
+  double _currentSliderValue = 0;
+  Duration _duration = Duration.zero;
+  Duration _position = Duration.zero;
+  
+  // Stream subscriptions
+  late final _positionSubscription;
+  late final _durationSubscription;
+  late final _playerStateSubscription;
   
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: const Duration(seconds: 180), // 3 minutes song
-      vsync: this,
-    );
-    _progressAnimation = Tween<double>(begin: 0, end: 100).animate(_controller)
-      ..addListener(() {
-        setState(() {
-          _currentSliderValue = _progressAnimation.value;
-        });
-      });
+    _isPlaying = widget.isPlaying;
     
-    // Auto-start playback animation
-    _controller.forward();
+    // Set up position listener
+    _positionSubscription = widget.audioPlayer.positionStream.listen((position) {
+      // Check if the widget is still mounted before calling setState
+      if (mounted) {
+        setState(() {
+          _position = position;
+          if (_duration.inMilliseconds > 0) {
+            _currentSliderValue = (_position.inMilliseconds / _duration.inMilliseconds * 100)
+                .clamp(0.0, 100.0);
+          }
+        });
+      }
+    });
+    
+    // Set up duration listener
+    _durationSubscription = widget.audioPlayer.durationStream.listen((duration) {
+      if (duration != null && mounted) {
+        setState(() {
+          _duration = duration;
+        });
+      }
+    });
+    
+    // Set up player state listener
+    _playerStateSubscription = widget.audioPlayer.playerStateStream.listen((state) {
+      if (mounted) {
+        setState(() {
+          _isPlaying = state.playing;
+        });
+      }
+    });
   }
   
   @override
   void dispose() {
-    _controller.dispose();
+    // Cancel all stream subscriptions when widget is disposed
+    _positionSubscription.cancel();
+    _durationSubscription.cancel();
+    _playerStateSubscription.cancel();
     super.dispose();
   }
   
-  String _formatDuration(double value) {
-    final totalSeconds = (value / 100 * 180).round(); // 3 minutes in seconds
-    final minutes = totalSeconds ~/ 60;
-    final seconds = totalSeconds % 60;
-    return '${minutes.toString().padLeft(1, '0')}:${seconds.toString().padLeft(2, '0')}';
+  String _formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    final minutes = twoDigits(duration.inMinutes);
+    final seconds = twoDigits(duration.inSeconds.remainder(60));
+    return "$minutes:$seconds";
   }
   
   @override
@@ -168,7 +204,10 @@ class _FullPlayerState extends State<FullPlayer> with SingleTickerProviderStateM
                           onChanged: (double value) {
                             setState(() {
                               _currentSliderValue = value;
-                              _controller.value = value / 100;
+                              if (_duration.inMilliseconds > 0) {
+                                final position = (_duration.inMilliseconds * (value / 100)).round();
+                                widget.audioPlayer.seek(Duration(milliseconds: position));
+                              }
                             });
                           },
                         ),
@@ -180,12 +219,12 @@ class _FullPlayerState extends State<FullPlayer> with SingleTickerProviderStateM
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                _formatDuration(_currentSliderValue),
+                                _formatDuration(_position),
                                 style: const TextStyle(color: Colors.white70),
                               ),
-                              const Text(
-                                '3:00',
-                                style: TextStyle(color: Colors.white70),
+                              Text(
+                                _formatDuration(_duration),
+                                style: const TextStyle(color: Colors.white70),
                               ),
                             ],
                           ),
@@ -224,11 +263,10 @@ class _FullPlayerState extends State<FullPlayer> with SingleTickerProviderStateM
                                 ),
                                 onPressed: () {
                                   setState(() {
-                                    _isPlaying = !_isPlaying;
                                     if (_isPlaying) {
-                                      _controller.forward();
+                                      widget.audioPlayer.pause();
                                     } else {
-                                      _controller.stop();
+                                      widget.audioPlayer.play();
                                     }
                                   });
                                 },

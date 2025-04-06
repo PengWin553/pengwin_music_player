@@ -1,25 +1,90 @@
 import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';
 import '../../data/models/song.dart';
 import '../../features/songs/screens/full_player.dart';
 
-class MiniPlayer extends StatelessWidget {
+class MiniPlayer extends StatefulWidget {
   final Song? currentSong;
 
   const MiniPlayer({Key? key, this.currentSong}) : super(key: key);
 
   @override
+  _MiniPlayerState createState() => _MiniPlayerState();
+}
+
+class _MiniPlayerState extends State<MiniPlayer> {
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  bool _isPlaying = false;
+  
+  @override
+  void initState() {
+    super.initState();
+    // Initialize audio session for better control
+    _setupAudioPlayer();
+  }
+  
+  @override
+  void didUpdateWidget(MiniPlayer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // When the widget updates and there's a new song, play it
+    if (widget.currentSong != null && 
+        (oldWidget.currentSong == null || 
+         widget.currentSong!.id != oldWidget.currentSong!.id)) {
+      _playSong(widget.currentSong!);
+    }
+  }
+  
+  void _setupAudioPlayer() {
+    // Listen to playback events
+    _audioPlayer.playerStateStream.listen((state) {
+      if (state.playing != _isPlaying) {
+        setState(() {
+          _isPlaying = state.playing;
+        });
+      }
+    });
+  }
+  
+  Future<void> _playSong(Song song) async {
+    // Stop any currently playing audio
+    await _audioPlayer.stop();
+    
+    try {
+      // Set the asset source - make sure the path is correctly set in pubspec.yaml
+      await _audioPlayer.setAsset(song.path);
+      await _audioPlayer.play();
+    } catch (e) {
+      print('Error playing song: $e');
+    }
+  }
+  
+  void _togglePlayPause() {
+    if (_audioPlayer.playing) {
+      _audioPlayer.pause();
+    } else {
+      _audioPlayer.play();
+    }
+  }
+  
+  @override
+  void dispose() {
+    _audioPlayer.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     // If no song is selected, hide the miniplayer
-    if (currentSong == null) {
+    if (widget.currentSong == null) {
       return const SizedBox.shrink();
     }
 
     return GestureDetector(
       onTap: () {
-        _navigateToFullPlayer(context, currentSong!);
+        _navigateToFullPlayer(context, widget.currentSong!);
       },
       child: Hero(
-        tag: 'player-${currentSong!.title}',
+        tag: 'player-${widget.currentSong!.title}',
         child: Material(
           // Material is needed for the Hero animation to work with text
           color: Colors.transparent,
@@ -75,7 +140,7 @@ class MiniPlayer extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        currentSong!.title,
+                        widget.currentSong!.title,
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -84,7 +149,7 @@ class MiniPlayer extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
-                        currentSong!.artist,
+                        widget.currentSong!.artist,
                         style: const TextStyle(
                           color: Colors.white70,
                           fontSize: 14,
@@ -107,13 +172,11 @@ class MiniPlayer extends StatelessWidget {
                       },
                     ),
                     IconButton(
-                      icon: const Icon(
-                        Icons.play_arrow, // or Icons.pause
+                      icon: Icon(
+                        _isPlaying ? Icons.pause : Icons.play_arrow,
                         color: Colors.white,
                       ),
-                      onPressed: () {
-                        // Add play/pause functionality
-                      },
+                      onPressed: _togglePlayPause,
                     ),
                     IconButton(
                       icon: const Icon(
@@ -137,7 +200,8 @@ class MiniPlayer extends StatelessWidget {
   void _navigateToFullPlayer(BuildContext context, Song song) {
     Navigator.of(context).push(
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => FullPlayer(song: song),
+        pageBuilder: (context, animation, secondaryAnimation) => 
+            FullPlayer(song: song, audioPlayer: _audioPlayer, isPlaying: _isPlaying),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           const begin = Offset(0.0, 1.0);
           const end = Offset.zero;
