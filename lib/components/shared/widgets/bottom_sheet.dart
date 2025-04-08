@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import '../../data/models/song.dart';
 import '../../features/songs/screens/full_player.dart';
+import '../../features/songs/widgets/songs_list.dart';
 
 class MiniPlayer extends StatefulWidget {
   final Song? currentSong;
@@ -16,11 +17,20 @@ class _MiniPlayerState extends State<MiniPlayer> {
   final AudioPlayer _audioPlayer = AudioPlayer();
   bool _isPlaying = false;
   
+  // Track the current song index in the playlist
+  int _currentSongIndex = 0;
+  // Reference to the playlist - we'll initialize this when a song is played
+  List<Song> _playlist = [];
+  // Add this state variable to track the currently playing song
+  Song? _currentSong;
+  
   @override
   void initState() {
     super.initState();
     // Initialize audio session for better control
     _setupAudioPlayer();
+    // Initialize the current song from widget prop
+    _currentSong = widget.currentSong;
   }
   
   @override
@@ -30,8 +40,31 @@ class _MiniPlayerState extends State<MiniPlayer> {
     if (widget.currentSong != null && 
         (oldWidget.currentSong == null || 
          widget.currentSong!.id != oldWidget.currentSong!.id)) {
-      _playSong(widget.currentSong!);
+      
+      // Update our local state with the new song
+      setState(() {
+        _currentSong = widget.currentSong;
+      });
+      
+      // We need to fetch the playlist and find the index of the current song
+      _fetchPlaylistAndPlay(widget.currentSong!);
     }
+  }
+  
+  // Fetch the playlist and find the current song's index
+  void _fetchPlaylistAndPlay(Song song) {
+    // Get the playlist from the SongsList
+    final songsData = SongsList.getSongsList();
+    
+    setState(() {
+      _playlist = songsData;
+      // Find the index of the current song in the playlist
+      _currentSongIndex = _playlist.indexWhere((s) => s.id == song.id);
+      if (_currentSongIndex < 0) _currentSongIndex = 0; // Fallback if not found
+    });
+    
+    // Play the song
+    _playSong(song);
   }
   
   void _setupAudioPlayer() {
@@ -43,11 +76,23 @@ class _MiniPlayerState extends State<MiniPlayer> {
         });
       }
     });
+    
+    // Listen to play completion to handle auto-next
+    _audioPlayer.playerStateStream.listen((state) {
+      if (state.processingState == ProcessingState.completed) {
+        _playNextSong();
+      }
+    });
   }
   
   Future<void> _playSong(Song song) async {
     // Stop any currently playing audio
     await _audioPlayer.stop();
+    
+    // Update the current song in state
+    setState(() {
+      _currentSong = song;
+    });
     
     try {
       // Set the asset source - make sure the path is correctly set in pubspec.yaml
@@ -66,6 +111,32 @@ class _MiniPlayerState extends State<MiniPlayer> {
     }
   }
   
+  void _playNextSong() {
+    if (_playlist.isEmpty) return;
+    
+    // Update index first
+    setState(() {
+      // Move to next song, loop back to first if we're at the end
+      _currentSongIndex = (_currentSongIndex + 1) % _playlist.length;
+    });
+    
+    // Then play the next song (which will update _currentSong)
+    _playSong(_playlist[_currentSongIndex]);
+  }
+  
+  void _playPreviousSong() {
+    if (_playlist.isEmpty) return;
+    
+    // Update index first
+    setState(() {
+      // Move to previous song, loop to the last if we're at the beginning
+      _currentSongIndex = (_currentSongIndex - 1 + _playlist.length) % _playlist.length;
+    });
+    
+    // Then play the previous song (which will update _currentSong)
+    _playSong(_playlist[_currentSongIndex]);
+  }
+  
   @override
   void dispose() {
     _audioPlayer.dispose();
@@ -75,16 +146,16 @@ class _MiniPlayerState extends State<MiniPlayer> {
   @override
   Widget build(BuildContext context) {
     // If no song is selected, hide the miniplayer
-    if (widget.currentSong == null) {
+    if (_currentSong == null) {
       return const SizedBox.shrink();
     }
 
     return GestureDetector(
       onTap: () {
-        _navigateToFullPlayer(context, widget.currentSong!);
+        _navigateToFullPlayer(context, _currentSong!);
       },
       child: Hero(
-        tag: 'player-${widget.currentSong!.title}',
+        tag: 'player-${_currentSong!.title}',
         child: Material(
           // Material is needed for the Hero animation to work with text
           color: Colors.transparent,
@@ -133,14 +204,14 @@ class _MiniPlayerState extends State<MiniPlayer> {
                   ),
                 ),
                 
-                // Song info
+                // Song info - Use _currentSong instead of widget.currentSong
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        widget.currentSong!.title,
+                        _currentSong!.title,
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -149,7 +220,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
-                        widget.currentSong!.artist,
+                        _currentSong!.artist,
                         style: const TextStyle(
                           color: Colors.white70,
                           fontSize: 14,
@@ -167,9 +238,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                         Icons.skip_previous,
                         color: Colors.white,
                       ),
-                      onPressed: () {
-                        // Add previous song functionality
-                      },
+                      onPressed: _playPreviousSong,
                     ),
                     IconButton(
                       icon: Icon(
@@ -183,9 +252,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                         Icons.skip_next,
                         color: Colors.white,
                       ),
-                      onPressed: () {
-                        // Add next song functionality
-                      },
+                      onPressed: _playNextSong,
                     ),
                   ],
                 ),

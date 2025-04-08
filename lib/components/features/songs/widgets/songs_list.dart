@@ -6,38 +6,49 @@ class SongsList extends StatefulWidget {
   final Function(Song)? onSongSelected;
   
   const SongsList({super.key, this.onSongSelected});
+  
+  // Static method to get the songs list for use in other widgets
+  static List<Song> getSongsList() {
+    return [
+      Song(
+        id: 1,
+        title: "Compared Child",
+        artist: "TUYU",
+        album: "Compared Child",
+        path: "assets/music/Compared Child.mp3",
+        duration: const Duration(minutes: 3, seconds: 36),
+      ),
+      Song(
+        id: 2,
+        title: "It's Raining After All",
+        artist: "TUYU",
+        album: "It's Raining After All",
+        path: "assets/music/Its Raining After All.mp3",
+        duration: const Duration(minutes: 4, seconds: 06),
+      ),
+      Song(
+        id: 3,
+        title: "Moonlight",
+        artist: "Suisei",
+        album: "Stellar Moments",
+        path: "assets/music/Moonlight.mp3",
+        duration: const Duration(minutes: 3, seconds: 25),
+      ),
+    ];
+  }
 
   @override
   State<SongsList> createState() => _SongsListState();
 }
 
 class _SongsListState extends State<SongsList> {
-  List<Song> songs = [
-    Song(
-      id: 1,
-      title: "Compared Child",
-      artist: "TUYU",
-      album: "Compared Child",
-      path: "assets/music/Compared Child.mp3",
-      duration: const Duration(minutes: 3, seconds: 36),
-    ),
-    Song(
-      id: 2,
-      title: "It's Raining After All",
-      artist: "TUYU",
-      album: "It's Raining After All",
-      path: "assets/music/Its Raining After All.mp3",
-      duration: const Duration(minutes: 4, seconds: 06),
-    ),
-    Song(
-      id: 3,
-      title: "Moonlight",
-      artist: "Suisei",
-      album: "Stellar Moments",
-      path: "assets/music/Moonlight.mp3",
-      duration: const Duration(minutes: 3, seconds: 25),
-    ),
-  ];
+  late List<Song> songs;
+  
+  @override
+  void initState() {
+    super.initState();
+    songs = SongsList.getSongsList();
+  }
   
   @override
   Widget build(BuildContext context) {
