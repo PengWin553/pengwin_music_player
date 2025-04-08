@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import '../../../data/models/song.dart';
+import '../widgets/songs_list.dart';
 
 class FullPlayer extends StatefulWidget {
   final Song song;
@@ -24,6 +25,13 @@ class _FullPlayerState extends State<FullPlayer> {
   Duration _duration = Duration.zero;
   Duration _position = Duration.zero;
   
+  // Track the current song index in the playlist
+  int _currentSongIndex = 0;
+  // Reference to the playlist
+  List<Song> _playlist = [];
+  // Current song
+  late Song _currentSong;
+  
   // Stream subscriptions
   late final _positionSubscription;
   late final _durationSubscription;
@@ -33,6 +41,10 @@ class _FullPlayerState extends State<FullPlayer> {
   void initState() {
     super.initState();
     _isPlaying = widget.isPlaying;
+    _currentSong = widget.song;
+    
+    // Initialize the playlist and find current song index
+    _initializePlaylist();
     
     // Set up position listener
     _positionSubscription = widget.audioPlayer.positionStream.listen((position) {
@@ -64,6 +76,25 @@ class _FullPlayerState extends State<FullPlayer> {
           _isPlaying = state.playing;
         });
       }
+    });
+    
+    // Listen to play completion to handle auto-next
+    widget.audioPlayer.playerStateStream.listen((state) {
+      if (state.processingState == ProcessingState.completed && mounted) {
+        _playNextSong();
+      }
+    });
+  }
+  
+  void _initializePlaylist() {
+    // Get the playlist from the SongsList
+    final songsData = SongsList.getSongsList();
+    
+    setState(() {
+      _playlist = songsData;
+      // Find the index of the current song in the playlist
+      _currentSongIndex = _playlist.indexWhere((s) => s.id == _currentSong.id);
+      if (_currentSongIndex < 0) _currentSongIndex = 0; // Fallback if not found
     });
   }
   
@@ -102,6 +133,48 @@ class _FullPlayerState extends State<FullPlayer> {
       widget.audioPlayer.seek(newPosition);
     } else {
       widget.audioPlayer.seek(Duration.zero);
+    }
+  }
+  
+  // Play the next song in the playlist
+  void _playNextSong() {
+    if (_playlist.isEmpty) return;
+    
+    setState(() {
+      // Move to next song, loop back to first if we're at the end
+      _currentSongIndex = (_currentSongIndex + 1) % _playlist.length;
+      _currentSong = _playlist[_currentSongIndex];
+    });
+    
+    // Play the next song
+    _playSong(_currentSong);
+  }
+  
+  // Play the previous song in the playlist
+  void _playPreviousSong() {
+    if (_playlist.isEmpty) return;
+    
+    setState(() {
+      // Move to previous song, loop to the last if we're at the beginning
+      _currentSongIndex = (_currentSongIndex - 1 + _playlist.length) % _playlist.length;
+      _currentSong = _playlist[_currentSongIndex];
+    });
+    
+    // Play the previous song
+    _playSong(_currentSong);
+  }
+  
+  // Method to play a specific song
+  Future<void> _playSong(Song song) async {
+    // Stop any currently playing audio
+    await widget.audioPlayer.stop();
+    
+    try {
+      // Set the asset source - make sure the path is correctly set in pubspec.yaml
+      await widget.audioPlayer.setAsset(song.path);
+      await widget.audioPlayer.play();
+    } catch (e) {
+      print('Error playing song: $e');
     }
   }
   
@@ -156,31 +229,34 @@ class _FullPlayerState extends State<FullPlayer> {
                 flex: 4,
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(32.0, 16.0, 32.0, 16.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Color.fromARGB(255, 60, 10, 110), 
-                          Color.fromARGB(255, 150, 30, 180),
+                  child: Hero(
+                    tag: 'player-${_currentSong.title}',
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Color.fromARGB(255, 60, 10, 110), 
+                            Color.fromARGB(255, 150, 30, 180),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.3),
+                            spreadRadius: 2,
+                            blurRadius: 15,
+                            offset: const Offset(0, 5),
+                          ),
                         ],
                       ),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.3),
-                          spreadRadius: 2,
-                          blurRadius: 15,
-                          offset: const Offset(0, 5),
+                      child: const Center(
+                        child: Icon(
+                          Icons.music_note,
+                          size: 100,
+                          color: Colors.white70,
                         ),
-                      ],
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.music_note,
-                        size: 100,
-                        color: Colors.white70,
                       ),
                     ),
                   ),
@@ -197,7 +273,7 @@ class _FullPlayerState extends State<FullPlayer> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          widget.song.title,
+                          _currentSong.title,
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 24,
@@ -207,7 +283,7 @@ class _FullPlayerState extends State<FullPlayer> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          widget.song.artist,
+                          _currentSong.artist,
                           style: const TextStyle(
                             color: Colors.white70,
                             fontSize: 18,
@@ -286,7 +362,7 @@ class _FullPlayerState extends State<FullPlayer> {
                             ),
                             IconButton(
                               icon: const Icon(Icons.skip_previous, color: Colors.white, size: 32),
-                              onPressed: () {},
+                              onPressed: _playPreviousSong, // Connect to previous song method
                               padding: const EdgeInsets.all(8),
                               constraints: const BoxConstraints(),
                             ),
@@ -318,7 +394,7 @@ class _FullPlayerState extends State<FullPlayer> {
                             ),
                             IconButton(
                               icon: const Icon(Icons.skip_next, color: Colors.white, size: 32),
-                              onPressed: () {},
+                              onPressed: _playNextSong, // Connect to next song method
                               padding: const EdgeInsets.all(8),
                               constraints: const BoxConstraints(),
                             ),
