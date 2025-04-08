@@ -83,6 +83,28 @@ class _FullPlayerState extends State<FullPlayer> {
     return "$minutes:$seconds";
   }
   
+  // method to seek forward by 5 seconds
+  void _seekForward() {
+    final newPosition = _position + const Duration(seconds: 5);
+    // Ensure we don't seek beyond the duration
+    if (newPosition <= _duration) {
+      widget.audioPlayer.seek(newPosition);
+    } else {
+      widget.audioPlayer.seek(_duration);
+    }
+  }
+  
+  // method to rewind by 5 seconds
+  void _seekBackward() {
+    final newPosition = _position - const Duration(seconds: 5);
+    // Ensure we don't seek before the beginning
+    if (newPosition.inMilliseconds > 0) {
+      widget.audioPlayer.seek(newPosition);
+    } else {
+      widget.audioPlayer.seek(Duration.zero);
+    }
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -193,23 +215,44 @@ class _FullPlayerState extends State<FullPlayer> {
                           textAlign: TextAlign.center,
                         ),
                         
-                        // Progress bar
+                        // Progress bar with rewind and forward buttons
                         const SizedBox(height: 16),
-                        Slider(
-                          value: _currentSliderValue,
-                          min: 0,
-                          max: 100,
-                          activeColor: Colors.white,
-                          inactiveColor: Colors.white24,
-                          onChanged: (double value) {
-                            setState(() {
-                              _currentSliderValue = value;
-                              if (_duration.inMilliseconds > 0) {
-                                final position = (_duration.inMilliseconds * (value / 100)).round();
-                                widget.audioPlayer.seek(Duration(milliseconds: position));
-                              }
-                            });
-                          },
+                        Row(
+                          children: [
+                            // 5-second rewind button
+                            IconButton(
+                              icon: const Icon(Icons.replay_5, color: Colors.white, size: 28),
+                              onPressed: _seekBackward,
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            ),
+                            // Slider taking most of the space
+                            Expanded(
+                              child: Slider(
+                                value: _currentSliderValue,
+                                min: 0,
+                                max: 100,
+                                activeColor: Colors.white,
+                                inactiveColor: Colors.white24,
+                                onChanged: (double value) {
+                                  setState(() {
+                                    _currentSliderValue = value;
+                                    if (_duration.inMilliseconds > 0) {
+                                      final position = (_duration.inMilliseconds * (value / 100)).round();
+                                      widget.audioPlayer.seek(Duration(milliseconds: position));
+                                    }
+                                  });
+                                },
+                              ),
+                            ),
+                            // 5-second forward button
+                            IconButton(
+                              icon: const Icon(Icons.forward_5, color: Colors.white, size: 28),
+                              onPressed: _seekForward,
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            ),
+                          ],
                         ),
                         
                         // Time indicators
