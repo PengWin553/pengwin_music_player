@@ -3,13 +3,6 @@ import 'package:just_audio/just_audio.dart';
 import '../../../data/models/song.dart';
 import '../widgets/songs_list.dart';
 
-// Define an enum for the repeat modes
-enum RepeatMode {
-  off,
-  all,
-  one,
-}
-
 class FullPlayer extends StatefulWidget {
   final Song song;
   final AudioPlayer audioPlayer;
@@ -38,15 +31,11 @@ class _FullPlayerState extends State<FullPlayer> {
   List<Song> _playlist = [];
   // Current song
   late Song _currentSong;
-  
-  // Add repeat mode state
-  RepeatMode _repeatMode = RepeatMode.off;
 
   // Stream subscriptions
   late final _positionSubscription;
   late final _durationSubscription;
   late final _playerStateSubscription;
-  late final _processingStateSubscription;
 
   @override
   void initState() {
@@ -97,16 +86,12 @@ class _FullPlayerState extends State<FullPlayer> {
       }
     });
 
-    // Listen to processing state specifically for song completion
-    _processingStateSubscription = widget.audioPlayer.processingStateStream.listen((state) {
-      if (state == ProcessingState.completed && mounted) {
-        // Handle song completion based on repeat mode
-        _handleSongCompletion();
+    // Listen to play completion to handle auto-next
+    widget.audioPlayer.playerStateStream.listen((state) {
+      if (state.processingState == ProcessingState.completed && mounted) {
+        _playNextSong();
       }
     });
-    
-    // Configure the AudioPlayer's loop mode based on our RepeatMode
-    _updateAudioPlayerLoopMode();
   }
 
   void _initializePlaylist() {
@@ -121,99 +106,12 @@ class _FullPlayerState extends State<FullPlayer> {
     });
   }
 
-  // Update the AudioPlayer's loop mode based on our RepeatMode
-  void _updateAudioPlayerLoopMode() {
-    switch (_repeatMode) {
-      case RepeatMode.off:
-        widget.audioPlayer.setLoopMode(LoopMode.off);
-        break;
-      case RepeatMode.all:
-        widget.audioPlayer.setLoopMode(LoopMode.all);
-        break;
-      case RepeatMode.one:
-        widget.audioPlayer.setLoopMode(LoopMode.one);
-        break;
-    }
-  }
-
-  // Handle song completion based on repeat mode
-  void _handleSongCompletion() {
-    switch (_repeatMode) {
-      case RepeatMode.off:
-        // If it's the last song, do nothing (playback stops)
-        if (_currentSongIndex < _playlist.length - 1) {
-          _playNextSong();
-        }
-        break;
-      case RepeatMode.all:
-        // If it's the last song, loop back to the first
-        if (_currentSongIndex == _playlist.length - 1) {
-          setState(() {
-            _currentSongIndex = 0;
-            _currentSong = _playlist[_currentSongIndex];
-          });
-          _playSong(_currentSong);
-        } else {
-          _playNextSong();
-        }
-        break;
-      case RepeatMode.one:
-        // Just replay the current song - it should be handled by AudioPlayer's loop mode
-        // But we'll ensure it explicitly here
-        _playSong(_currentSong);
-        break;
-    }
-  }
-
-  // Method to cycle through repeat modes
-  void _cycleRepeatMode() {
-    setState(() {
-      switch (_repeatMode) {
-        case RepeatMode.off:
-          _repeatMode = RepeatMode.all;
-          break;
-        case RepeatMode.all:
-          _repeatMode = RepeatMode.one;
-          break;
-        case RepeatMode.one:
-          _repeatMode = RepeatMode.off;
-          break;
-      }
-      // Update the AudioPlayer's loop mode when we change our repeat mode
-      _updateAudioPlayerLoopMode();
-    });
-  }
-
-  // Get the appropriate icon for the current repeat mode
-  IconData _getRepeatIcon() {
-    switch (_repeatMode) {
-      case RepeatMode.off:
-        return Icons.repeat;
-      case RepeatMode.all:
-        return Icons.repeat;
-      case RepeatMode.one:
-        return Icons.repeat_one;
-    }
-  }
-
-  // Get the color for the repeat icon based on mode
-  Color _getRepeatIconColor() {
-    switch (_repeatMode) {
-      case RepeatMode.off:
-        return Colors.white70;
-      case RepeatMode.all:
-      case RepeatMode.one:
-        return Colors.white;
-    }
-  }
-
   @override
   void dispose() {
     // Cancel all stream subscriptions when widget is disposed
     _positionSubscription.cancel();
     _durationSubscription.cancel();
     _playerStateSubscription.cancel();
-    _processingStateSubscription.cancel();
     super.dispose();
   }
 
@@ -251,18 +149,8 @@ class _FullPlayerState extends State<FullPlayer> {
     if (_playlist.isEmpty) return;
 
     setState(() {
-      if (_currentSongIndex < _playlist.length - 1) {
-        // Move to next song
-        _currentSongIndex++;
-      } else {
-        // We're at the end, check if we should loop
-        if (_repeatMode == RepeatMode.all) {
-          _currentSongIndex = 0; // Loop back to first song
-        } else {
-          // If repeat is off, we'll stop at the last song
-          return;
-        }
-      }
+      // Move to next song, loop back to first if we're at the end
+      _currentSongIndex = (_currentSongIndex + 1) % _playlist.length;
       _currentSong = _playlist[_currentSongIndex];
     });
 
@@ -274,25 +162,10 @@ class _FullPlayerState extends State<FullPlayer> {
   void _playPreviousSong() {
     if (_playlist.isEmpty) return;
 
-    // If we're more than 3 seconds into the song, restart current song instead of previous
-    if (_position.inSeconds > 3) {
-      widget.audioPlayer.seek(Duration.zero);
-      return;
-    }
-
     setState(() {
-      if (_currentSongIndex > 0) {
-        // Move to previous song
-        _currentSongIndex--;
-      } else {
-        // We're at the beginning, check if we should loop
-        if (_repeatMode == RepeatMode.all) {
-          _currentSongIndex = _playlist.length - 1; // Loop to the last song
-        } else {
-          // If repeat is off, we'll stay at the first song
-          _currentSongIndex = 0;
-        }
-      }
+      // Move to previous song, loop to the last if we're at the beginning
+      _currentSongIndex =
+          (_currentSongIndex - 1 + _playlist.length) % _playlist.length;
       _currentSong = _playlist[_currentSongIndex];
     });
 
@@ -522,7 +395,8 @@ class _FullPlayerState extends State<FullPlayer> {
                                 color: Colors.white,
                                 size: 32,
                               ),
-                              onPressed: _playPreviousSong,
+                              onPressed:
+                                  _playPreviousSong, // Connect to previous song method
                               padding: const EdgeInsets.all(8),
                               constraints: const BoxConstraints(),
                             ),
@@ -563,35 +437,22 @@ class _FullPlayerState extends State<FullPlayer> {
                                 color: Colors.white,
                                 size: 32,
                               ),
-                              onPressed: _playNextSong,
+                              onPressed:
+                                  _playNextSong, // Connect to next song method
                               padding: const EdgeInsets.all(8),
                               constraints: const BoxConstraints(),
                             ),
                             IconButton(
-                              icon: Icon(
-                                _getRepeatIcon(),
-                                color: _getRepeatIconColor(), 
+                              icon: const Icon(
+                                Icons.repeat,
+                                color: Colors.white70,
                                 size: 24,
                               ),
-                              onPressed: _cycleRepeatMode,
+                              onPressed: () {},
                               padding: const EdgeInsets.all(8),
                               constraints: const BoxConstraints(),
                             ),
                           ],
-                        ),
-                        
-                        // Display current repeat mode as text for better user feedback
-                        const SizedBox(height: 8),
-                        Text(
-                          _repeatMode == RepeatMode.off 
-                              ? 'Repeat: Off' 
-                              : _repeatMode == RepeatMode.all 
-                                  ? 'Repeat: All' 
-                                  : 'Repeat: One',
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 12,
-                          ),
                         ),
                       ],
                     ),
